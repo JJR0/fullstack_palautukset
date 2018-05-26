@@ -80,8 +80,7 @@ app.post('/api/persons', (req, res) => {
 		id: Math.floor(Math.random() * 9999 + 1)
 	}
 
-	console.log("lisätty henkilö", person.name)
-	persons.concat(person)
+	persons = persons.concat(person)
 	res.json(person)
 })
 
