@@ -8,6 +8,7 @@ morgan.token('data', (req, res) =>  {
 	return JSON.stringify({name: req.body.name, number: req.body.number })
 })
 
+app.use(express.static('build'))
 app.use(cors())
 app.use(bodyParser.json())
 app.use(morgan(':method :url :data :status :res[content-length] - :response-time ms'))
