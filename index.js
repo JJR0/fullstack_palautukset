@@ -1,11 +1,13 @@
 const express = require('express')
-const morgan = require('morgan')
 const app = express()
+
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const morgan = require('morgan')
+const Person = require('./models/person')
 
 morgan.token('data', (req, res) =>  {
-	return JSON.stringify({name: req.body.name, number: req.body.number })
+	return JSON.stringify({ name: req.body.name, number: req.body.number })
 })
 
 app.use(express.static('build'))
@@ -13,48 +15,43 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(morgan(':method :url :data :status :res[content-length] - :response-time ms'))
 
-let persons = [
-	{
-		name: 'Arto Hellas',
-		number: '040-123456',
-		id: 1
-	},
-	{
-		name: 'Martti Tienari',
-		number: '040-123456',
-		id: 2
-	},
-	{
-		name: 'Arto Järvinen',
-		number: '040-123456',
-		id: 3
-	},
-	{
-		name: 'Lea Kutvonen',
-		number: '040-123456',
-		id: 4
-	}
-]
-
 // GET pyyntö, joka palauttaa henkilöt JSON-muotoisena merkkijonona
 app.get('/api/persons', (req, res) => {
-	res.json(persons)
+	Person
+		.find({})
+		.then(persons => {
+			res.json(persons.map(Person.format))
+		})
+		.catch(error => {
+			console.log(error)
+		})
 })
 
 app.get('/info', (req, res) => {
-	const lukumaara = persons.length
-	res.send(`puhelinluettelossa on ${lukumaara} henkilon tiedot <br> ${new Date()}`)
+	Person
+		.find({})
+		.then(persons => {
+			res.send(`puhelinluettelossa on ${persons.length} henkilon tiedot <br> ${new Date()}`)
+		})
+		.catch(error => {
+			console.log(error)
+		})
 })
 
 app.get('/api/persons/:id', (req, res) => {
-	const id = Number(req.params.id)
-	const person = persons.find(person => person.id === id)
-
-	if (person) {
-			res.send(person)
-	} else {
-			res.status(404).end()
-	}
+	Person
+		.findById(req.params.id)
+		.then(person => {
+			if (person) {
+				res.json(Person.format(person))
+			} else {
+				res.status(404).end()
+			}
+		})
+		.catch(error => {
+			console.log(error)
+			res.status(400).send({ error: 'malformatted id ' })
+		})
 })
 
 app.delete('/api/persons/:id', (req, res) => {
@@ -67,22 +64,31 @@ app.post('/api/persons', (req, res) => {
 	const body = req.body
 
 	if (body.name === undefined) {
-		return res.status(400).json({error: 'name is missing'})
+		return res.status(400).json({ error: 'name is missing' })
 	} else if (body.number === undefined) {
-		return res.status(400).json({error: 'number is missing'})
-	} else if (persons.filter(person => person.name === body.name).length === 1) {
-		return res.status(400).json({error: 'name must be unique'})
+		return res.status(400).json({ error: 'number is missing' })
 	}
 
-	const person = {
+	const person = new Person({
 		name: body.name,
-		number: body.number,
-		id: Math.floor(Math.random() * 9999 + 1)
-	}
+		number: body.number
+	})
 
-	persons = persons.concat(person)
-	res.json(person)
+	person
+		.save()
+		.then(savedPerson => {
+			res.json(Person.format(savedPerson))
+		})
+		.catch(error => {
+			console.log(error)
+		})
 })
+
+const error = (req, res) => {
+	res.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(error)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
