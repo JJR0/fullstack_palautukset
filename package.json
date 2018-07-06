@@ -6,15 +6,18 @@
   "scripts": {
     "start": "node index.js",
     "watch": "nodemon index.js",
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joonas Rantanen",
   "license": "MIT",
   "devDependencies": {
+    "eslint": "^5.0.1",
     "nodemon": "^1.17.5"
   },
   "dependencies": {
     "cors": "^2.8.4",
+    "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "mongoose": "^5.1.2",
     "morgan": "^1.9.0"

@@ -61,6 +61,7 @@ app.delete('/api/persons/:id', (req, res) => {
 			res.status(204).end()
 		})
 		.catch(error => {
+			console.log(error)
 			res.status(400).send({ error: 'malformatted id' })
 		})
 })
